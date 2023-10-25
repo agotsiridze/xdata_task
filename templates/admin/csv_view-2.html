@@ -1,0 +1,86 @@
+{% extends 'admin/change_form.html' %}
+<!--  -->
+{% block object-tools %}
+<dialog id="previewDialog" style="z-index: 999; color: white">
+  <form method="dialog" style="justify-content: flex-end; display: flex">
+    <button>X</button>
+  </form>
+  <table id="tableData">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
+</dialog>
+<script>
+  setTimeout(() => {
+    const uploadBtn = document.querySelector("#id_csv_of_filterwords");
+
+    const previewBtn = document.createElement("button");
+    const splitBy = document.createElement("button");
+    previewBtn.role = "button";
+    previewBtn.innerText = "Preview";
+    previewBtn.addEventListener("click", ($event) => {
+      $event.preventDefault();
+      readCSVFile();
+    });
+
+    uploadBtn.parentNode.insertBefore(previewBtn, uploadBtn.nextSibling);
+  }, 0);
+
+  function readCSVFile() {
+    var files = document.querySelector("#id_csv_of_filterwords").files;
+
+    if (files.length > 0) {
+      var file = files[0];
+
+      var reader = new FileReader();
+
+      reader.readAsText(file);
+
+      reader.onload = function (event) {
+        var csvdata = event.target.result;
+
+        var rowData = csvdata.split("\n");
+        const delimiter = guessDelimiters(csvdata, [";", ",", ".", "\t", "|"]);
+        const dialog = document.querySelector("#previewDialog");
+        dialog.show();
+
+        var tbodyEl = document
+          .getElementById("tableData")
+          .getElementsByTagName("tbody")[0];
+        tbodyEl.innerHTML = "";
+        for (var row = 0; row < rowData.length; row++) {
+          var newRow = tbodyEl.insertRow();
+          rowColData = rowData[row].split(delimiter);
+          for (var col = 0; col < rowColData.length; col++) {
+            var newCell = newRow.insertCell();
+            newCell.innerHTML = rowColData[col];
+          }
+        }
+      };
+    } else {
+      alert("Please select a file.");
+    }
+  }
+
+  function guessDelimiters(text, possibleDelimiters) {
+    return possibleDelimiters.filter(weedOut);
+
+    function weedOut(delimiter) {
+      var cache = -1;
+      return text.split("\n").every(checkLength);
+
+      function checkLength(line) {
+        if (!line) {
+          return true;
+        }
+
+        var length = line.split(delimiter).length;
+        if (cache < 0) {
+          cache = length;
+        }
+        return cache === length && length > 1;
+      }
+    }
+  }
+</script>
+{% endblock %}

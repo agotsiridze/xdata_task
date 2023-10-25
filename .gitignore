@@ -1,0 +1,4 @@
+.vscode/
+env_xdata/
+xdata/__pycache__/
+client_management/__pycache__/
